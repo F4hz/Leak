@@ -1,4 +1,4 @@
-print("6A6 Hub IS COMING BOII!!, ALSO DO MY KEYSYSTEM I NEEDD TO REVENGE TO MY GF")
+-- BlueX Hub UI
 
 Library = {}
 
@@ -2192,6 +2192,59 @@ function Library:CreateWindow(info)
 				DropdownItem_1.Size = UDim2.new(0.899999976, 0,1, 0)
 				DropdownItem_1.ClipsDescendants = true
 
+				-- Search box inside the dropdown panel
+				local SearchBox_1 = Instance.new("Frame")
+				local SearchBoxCorner = Instance.new("UICorner")
+				local SearchBoxStroke = Instance.new("UIStroke")
+				local SearchIcon_1 = Instance.new("ImageLabel")
+				local SearchInput_1 = Instance.new("TextBox")
+
+				SearchBox_1.Name = "SearchBox"
+				SearchBox_1.Parent = DropdownItem_1
+				SearchBox_1.AnchorPoint = Vector2.new(0.5, 0)
+				SearchBox_1.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				SearchBox_1.BackgroundTransparency = 0
+				SearchBox_1.BorderSizePixel = 0
+				SearchBox_1.Position = UDim2.new(0.5, 0, 0, 5)
+				SearchBox_1.Size = UDim2.new(0.9, 0, 0, 20)
+				SearchBox_1.ZIndex = 2
+
+				SearchBoxCorner.Parent = SearchBox_1
+				SearchBoxCorner.CornerRadius = UDim.new(0, 4)
+
+				SearchBoxStroke.Parent = SearchBox_1
+				SearchBoxStroke.Color = Color3.fromRGB(55, 55, 55)
+				SearchBoxStroke.Thickness = 1
+
+				SearchIcon_1.Name = "SearchIcon"
+				SearchIcon_1.Parent = SearchBox_1
+				SearchIcon_1.AnchorPoint = Vector2.new(0, 0.5)
+				SearchIcon_1.BackgroundTransparency = 1
+				SearchIcon_1.BorderSizePixel = 0
+				SearchIcon_1.Position = UDim2.new(0, 4, 0.5, 0)
+				SearchIcon_1.Size = UDim2.new(0, 10, 0, 10)
+				SearchIcon_1.Image = "rbxassetid://10734943674" -- search icon from IconList
+				SearchIcon_1.ImageColor3 = Color3.fromRGB(180, 180, 180)
+				SearchIcon_1.ZIndex = 3
+
+				SearchInput_1.Name = "SearchInput"
+				SearchInput_1.Parent = SearchBox_1
+				SearchInput_1.Active = true
+				SearchInput_1.AnchorPoint = Vector2.new(0, 0.5)
+				SearchInput_1.BackgroundTransparency = 1
+				SearchInput_1.BorderSizePixel = 0
+				SearchInput_1.Position = UDim2.new(0, 18, 0.5, 0)
+				SearchInput_1.Size = UDim2.new(1, -22, 1, 0)
+				SearchInput_1.Font = Enum.Font.Gotham
+				SearchInput_1.PlaceholderText = "Search..."
+				SearchInput_1.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+				SearchInput_1.Text = ""
+				SearchInput_1.TextColor3 = Color3.fromRGB(255, 255, 255)
+				SearchInput_1.TextSize = 9
+				SearchInput_1.TextXAlignment = Enum.TextXAlignment.Left
+				SearchInput_1.ClearTextOnFocus = false
+				SearchInput_1.ZIndex = 3
+
 				ScrollingFrame_2.Name = "ScrollingFrame"
 				ScrollingFrame_2.Parent = DropdownItem_1
 				ScrollingFrame_2.Active = true
@@ -2199,7 +2252,8 @@ function Library:CreateWindow(info)
 				ScrollingFrame_2.BackgroundTransparency = 1
 				ScrollingFrame_2.BorderColor3 = Color3.fromRGB(0,0,0)
 				ScrollingFrame_2.BorderSizePixel = 0
-				ScrollingFrame_2.Size = UDim2.new(1, 0,1, 0)
+				ScrollingFrame_2.Position = UDim2.new(0, 0, 0, 30) -- offset below search box
+				ScrollingFrame_2.Size = UDim2.new(1, 0, 1, -30)
 				ScrollingFrame_2.ClipsDescendants = true
 				ScrollingFrame_2.AutomaticCanvasSize = Enum.AutomaticSize.None
 				ScrollingFrame_2.BottomImage = "rbxasset://textures/ui/Scroll/scroll-bottom.png"
@@ -2217,39 +2271,71 @@ function Library:CreateWindow(info)
 
 				UIListLayout_10.Parent = ScrollingFrame_2
 				UIListLayout_10.SortOrder = Enum.SortOrder.LayoutOrder
-				
+
 				UICorner_16.Parent = DropdownItem_1
 				UICorner_16.CornerRadius = UDim.new(0,5)
-				
+
+				-- Helper: compute open height factoring in search box (30px) + items capped at 100
+				local SEARCH_H = 30
+				local function getOpenHeight()
+					local itemsH = UIListLayout_10.AbsoluteContentSize.Y + 5
+					local cap = math.min(itemsH, 100)
+					return SEARCH_H + cap
+				end
+
 				local isOpen = false
-				
+
+				-- Search filter: show/hide items whose text matches query
+				SearchInput_1:GetPropertyChangedSignal("Text"):Connect(function()
+					local query = SearchInput_1.Text:lower()
+					for _, child in ipairs(ScrollingFrame_2:GetChildren()) do
+						if child:IsA("TextButton") then
+							local matches = query == "" or child.Text:lower():find(query, 1, true)
+							child.Visible = matches ~= nil and matches ~= false
+						end
+					end
+					-- Resize panel to fit visible items
+					if isOpen then
+						local visibleH = 0
+						for _, child in ipairs(ScrollingFrame_2:GetChildren()) do
+							if child:IsA("TextButton") and child.Visible then
+								visibleH = visibleH + child.AbsoluteSize.Y
+							end
+						end
+						local cap = math.min(visibleH + 5, 100)
+						Tw({
+							v = DropdownSelect_1,
+							t = 0.1,
+							s = "Exponential",
+							d = "Out",
+							g = {Size = UDim2.new(1, 0, 0, SEARCH_H + cap)}
+						}):Play()
+					end
+				end)
+
 				Click_4.MouseButton1Click:Connect(function()
 					isOpen = not isOpen
 					if isOpen then
-						if UIListLayout_10.AbsoluteContentSize.Y + 5 < 100 then
-							Tw({
-								v = DropdownSelect_1,
-								t = 0.15,
-								s = "Exponential",
-								d = "Out",
-								g = {Size = UDim2.new(1, 0,0, UIListLayout_10.AbsoluteContentSize.Y + 5)}
-							}):Play()
-						else
-							Tw({
-								v = DropdownSelect_1,
-								t = 0.15,
-								s = "Exponential",
-								d = "Out",
-								g = {Size = UDim2.new(1, 0,0, 100)}
-							}):Play()
+						-- Clear search when opening
+						SearchInput_1.Text = ""
+						for _, child in ipairs(ScrollingFrame_2:GetChildren()) do
+							if child:IsA("TextButton") then child.Visible = true end
 						end
-					else
 						Tw({
 							v = DropdownSelect_1,
 							t = 0.15,
 							s = "Exponential",
 							d = "Out",
-							g = {Size = UDim2.new(1, 0,0, 0)}
+							g = {Size = UDim2.new(1, 0, 0, getOpenHeight())}
+						}):Play()
+					else
+						SearchInput_1.Text = ""
+						Tw({
+							v = DropdownSelect_1,
+							t = 0.15,
+							s = "Exponential",
+							d = "Out",
+							g = {Size = UDim2.new(1, 0, 0, 0)}
 						}):Play()
 					end
 				end)
@@ -2342,6 +2428,7 @@ function Library:CreateWindow(info)
 								g = {Size = UDim2.new(1, 0,0, 0)}
 							}):Play()
 							isOpen = false
+							SearchInput_1.Text = ""
 							Value = text
 							TextLabel_1.Text = text
 							Callback(TextLabel_1.Text)
