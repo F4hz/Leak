@@ -1087,7 +1087,7 @@ function Library:CreateWindow(info)
 	ResizeHandle.BackgroundTransparency = 1
 	ResizeHandle.BorderSizePixel = 0
 	ResizeHandle.Position = UDim2.new(1, 0, 1, 0)
-	ResizeHandle.Size = UDim2.new(0, 18, 0, 18)
+	ResizeHandle.Size = UDim2.new(0, 44, 0, 44)  -- large touch target for mobile
 	ResizeHandle.Text = ""
 	ResizeHandle.Font = Enum.Font.SourceSans
 	ResizeHandle.TextSize = 14
@@ -1099,11 +1099,11 @@ function Library:CreateWindow(info)
 	ResizeIcon.Size = UDim2.new(1, 0, 1, 0)
 	ResizeIcon.ZIndex = 10
 
-	-- Three diagonal grip lines (bottom-right corner dots style)
+	-- Three diagonal grip dots in bottom-right corner of the handle
 	local lineConfigs = {
-		{pos = UDim2.new(1, -4,  1, -4),  size = UDim2.new(0, 3, 0, 3)},
-		{pos = UDim2.new(1, -9,  1, -4),  size = UDim2.new(0, 3, 0, 3)},
-		{pos = UDim2.new(1, -4,  1, -9),  size = UDim2.new(0, 3, 0, 3)},
+		{pos = UDim2.new(1, -5,  1, -5),  size = UDim2.new(0, 4, 0, 4)},
+		{pos = UDim2.new(1, -12, 1, -5),  size = UDim2.new(0, 4, 0, 4)},
+		{pos = UDim2.new(1, -5,  1, -12), size = UDim2.new(0, 4, 0, 4)},
 	}
 	for i, cfg in ipairs(lineConfigs) do
 		local dot = Instance.new("Frame")
@@ -1879,19 +1879,35 @@ function Library:CreateWindow(info)
 				Title_7.TextXAlignment = Enum.TextXAlignment.Left
 				Title_7.TextYAlignment = Enum.TextYAlignment.Top
 
-				-- iOS-style slider: pill track (5px tall), white circular thumb
+				-- iOS-style slider: invisible container (20px tall) so thumb never clips
 				SliderBar_1.Name = "SliderBar"
 				SliderBar_1.Parent = Slider_1
 				SliderBar_1.AnchorPoint = Vector2.new(0, 0.5)
-				SliderBar_1.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-				SliderBar_1.BackgroundTransparency = 0
+				SliderBar_1.BackgroundColor3 = Color3.fromRGB(255,255,255)
+				SliderBar_1.BackgroundTransparency = 1
 				SliderBar_1.BorderColor3 = Color3.fromRGB(0,0,0)
 				SliderBar_1.BorderSizePixel = 0
-				SliderBar_1.Position = UDim2.new(0.0500000007, 0, 0.699999988, 0)
-				SliderBar_1.Size = UDim2.new(0.680000007, 0, 0, 5)
+				SliderBar_1.Position = UDim2.new(0.0500000007, 0, 0.72, 0)
+				SliderBar_1.Size = UDim2.new(0.680000007, 0, 0, 20)
+				SliderBar_1.ClipsDescendants = false
 
+				-- Visible pill track (centered inside container)
+				local TrackPill = Instance.new("Frame")
+				TrackPill.Name = "TrackPill"
+				TrackPill.Parent = SliderBar_1
+				TrackPill.AnchorPoint = Vector2.new(0, 0.5)
+				TrackPill.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+				TrackPill.BackgroundTransparency = 0
+				TrackPill.BorderSizePixel = 0
+				TrackPill.Position = UDim2.new(0, 0, 0.5, 0)
+				TrackPill.Size = UDim2.new(1, 0, 0, 5)
+				local TrackCorner = Instance.new("UICorner")
+				TrackCorner.CornerRadius = UDim.new(1, 0)
+				TrackCorner.Parent = TrackPill
+
+				-- Fill (child of TrackPill so it stays within track bounds)
 				SliderBarValue_1.Name = "SliderBarValue"
-				SliderBarValue_1.Parent = SliderBar_1
+				SliderBarValue_1.Parent = TrackPill
 				SliderBarValue_1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				SliderBarValue_1.BorderColor3 = Color3.fromRGB(0,0,0)
 				SliderBarValue_1.BorderSizePixel = 0
@@ -1900,29 +1916,31 @@ function Library:CreateWindow(info)
 				UICorner_11.Parent = SliderBarValue_1
 				UICorner_11.CornerRadius = UDim.new(1, 0)
 
-				-- iOS thumb: white circle, slightly larger, with subtle shadow via UIStroke
+				-- Thumb parented to SliderBar_1 (NOT fill/track) so it never clips
+				-- Its X scale matches the fill width; Y is centered in container
 				SliderO_1.Name = "SliderO"
-				SliderO_1.Parent = SliderBarValue_1
-				SliderO_1.AnchorPoint = Vector2.new(1, 0.5)
+				SliderO_1.Parent = SliderBar_1
+				SliderO_1.AnchorPoint = Vector2.new(0.5, 0.5)
 				SliderO_1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				SliderO_1.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				SliderO_1.BorderSizePixel = 0
-				SliderO_1.Position = UDim2.new(1, 0, 0.5, 0)
-				SliderO_1.Size = UDim2.new(0, 14, 0, 14)
+				SliderO_1.Position = UDim2.new(0.5, 0, 0.5, 0)
+				SliderO_1.Size = UDim2.new(0, 16, 0, 16)
+				SliderO_1.ZIndex = 5
 
 				UICorner_12.Parent = SliderO_1
 				UICorner_12.CornerRadius = UDim.new(1, 0)
 
-				-- Subtle drop shadow ring on thumb
 				local ThumbStroke = Instance.new("UIStroke")
 				ThumbStroke.Parent = SliderO_1
 				ThumbStroke.Color = Color3.fromRGB(0, 0, 0)
-				ThumbStroke.Transparency = 0.7
-				ThumbStroke.Thickness = 1
+				ThumbStroke.Transparency = 0.65
+				ThumbStroke.Thickness = 1.5
 
-				UICorner_13.Parent = SliderBar_1
+				UICorner_13.Parent = TrackPill
 				UICorner_13.CornerRadius = UDim.new(1, 0)
 
+				-- Large touch hit zone for mobile
 				Click_3.Name = "Click"
 				Click_3.Parent = SliderBar_1
 				Click_3.Active = true
@@ -1932,12 +1950,12 @@ function Library:CreateWindow(info)
 				Click_3.BorderColor3 = Color3.fromRGB(0,0,0)
 				Click_3.BorderSizePixel = 0
 				Click_3.Position = UDim2.new(0.5, 0, 0.5, 0)
-				Click_3.Size = UDim2.new(1, 20, 0, 22)
+				Click_3.Size = UDim2.new(1, 16, 1, 16)
 				Click_3.Font = Enum.Font.SourceSans
 				Click_3.Text = ""
 				Click_3.TextSize = 14
+				Click_3.ZIndex = 6
 
-				-- No gradient on iOS-style slider (solid track colors)
 				UIGradient_1.Parent = nil
 
 				SliderValueBox_1.Name = "SliderValueBox"
@@ -1975,12 +1993,22 @@ function Library:CreateWindow(info)
 				
 				local function updateSlider(value)
 					value = math.clamp(value, Min, Max)
+					local ratio = (value - Min) / (Max - Min)
+					-- Update fill bar
 					Tw({
 						v = SliderBarValue_1,
 						t = 0.15,
 						s = "Exponential",
 						d = "Out",
-						g = {Size = UDim2.new((value - Min) / (Max - Min), 0, 1, 0)}
+						g = {Size = UDim2.new(ratio, 0, 1, 0)}
+					}):Play()
+					-- Sync thumb X position to fill ratio (thumb lives on SliderBar_1)
+					Tw({
+						v = SliderO_1,
+						t = 0.15,
+						s = "Exponential",
+						d = "Out",
+						g = {Position = UDim2.new(ratio, 0, 0.5, 0)}
 					}):Play()
 					TextBox_1.Text = tostring(value)..Textending
 					TextBox_1.Size = UDim2.new(0, TextBox_1.TextBounds.X + 2, 0.5, 0)
@@ -2007,14 +2035,14 @@ function Library:CreateWindow(info)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 						dragging = true
 						move(input)
-						Tw({v = SliderO_1, t = 0.1, s = "Back", d = "Out", g = {Size = UDim2.new(0, 17, 0, 17)}}):Play()
+						Tw({v = SliderO_1, t = 0.1, s = "Back", d = "Out", g = {Size = UDim2.new(0, 20, 0, 20)}}):Play()
 					end
 				end)
 
 				Click_3.InputEnded:Connect(function(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 						dragging = false
-						Tw({v = SliderO_1, t = 0.1, s = "Back", d = "Out", g = {Size = UDim2.new(0, 14, 0, 14)}}):Play()
+						Tw({v = SliderO_1, t = 0.1, s = "Back", d = "Out", g = {Size = UDim2.new(0, 16, 0, 16)}}):Play()
 					end
 				end)
 
